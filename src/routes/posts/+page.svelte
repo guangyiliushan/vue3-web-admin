@@ -1,6 +1,22 @@
 <script lang="ts">
-  export let data;
+  export let data: { posts: Array<{ id: string; title: string; categoryId?: string; timeToRead: number; viewCount: number; updatedAt: string }> };
   const { posts } = data;
+
+  async function deletePost(postId: string) {
+    if (confirm('确定要删除这篇文章吗？')) {
+      try {
+        const response = await fetch(`/posts/${postId}`, { method: 'DELETE' });
+        if (response.ok) {
+          location.reload();
+        } else {
+          const error = await response.json();
+          alert(`删除失败: ${error.message || '未知错误'}`);
+        }
+      } catch (err) {
+        alert('网络错误，删除失败');
+      }
+    }
+  }
 </script>
 
 <div class="container mx-auto p-4">
@@ -31,7 +47,12 @@
             <td class="p-4">{new Date(post.updatedAt).toLocaleString()}</td>
             <td class="p-4">
               <a href="/posts/{post.id}/edit" class="text-blue-500 hover:underline mr-3">编辑</a>
-              <button class="text-red-500 hover:underline">删除</button>
+              <button 
+                class="text-red-500 hover:underline" 
+                on:click={() => deletePost(post.id)}
+              >
+                删除
+              </button>
             </td>
           </tr>
         {/each}

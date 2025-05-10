@@ -13,8 +13,16 @@
   let newCategoryName = ''; // 新分类名称
 
   // 从服务器加载现有分类
-  export let data: { categories?: string[] };
+  export let data: { categories?: string[], post?: { id: string, title: string, content: string, category: string, tags: string } };
   $: categories = data.categories || [];
+
+  // 如果传入了文章数据，则初始化表单字段
+  if (data.post) {
+    title = data.post.title;
+    content = data.post.content;
+    category = data.post.category;
+    tags = data.post.tags;
+  }
 
   async function confirmNewCategory() {
     if (!newCategoryName.trim()) {
@@ -42,14 +50,36 @@
       alert('创建分类失败');
     }
   }
+
+  async function handleSubmit(event: Event) {
+    event.preventDefault();
+
+    const payload = {
+      title,
+      content,
+      category,
+      tags
+    };
+
+    const url = data.post ? `/api/posts/${data.post.id}` : '/api/posts';
+    const method = data.post ? 'PUT' : 'POST';
+
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      alert(data.post ? '文章更新成功' : '文章创建成功');
+    } else {
+      alert(data.post ? '文章更新失败' : '文章创建失败');
+    }
+  }
 </script>
 
 <div class="container mx-auto p-4">
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold">新建文章</h1>
-  </div>
-
-  <form method="POST" use:enhance>
+  <form on:submit|preventDefault={handleSubmit}>
     <div class="grid grid-cols-1 gap-6 mb-6">
       <div>
         <label for="title" class="block text-sm font-medium text-gray-700">标题</label>
@@ -178,9 +208,11 @@
       </div>
     </div>
 
-    <div class="flex justify-end">
-      <a href="/posts" class="bg-gray-500 text-white px-4 py-2 rounded mr-2 inline-block">取消</a>
-      <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">发布文章</button>
-    </div>
+    <button 
+      type="submit" 
+      class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+    >
+      {data.post ? '更新文章' : '创建文章'}
+    </button>
   </form>
 </div>

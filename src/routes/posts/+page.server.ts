@@ -7,6 +7,5 @@ export const load: PageServerLoad = async () => {
       updatedAt: 'desc'
     }
   });
-  
   return { posts };
 };
