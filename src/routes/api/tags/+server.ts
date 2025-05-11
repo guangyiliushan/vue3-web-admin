@@ -3,13 +3,13 @@ import { prisma } from '$lib/server/prisma';
 
 export const GET = async () => {
   try {
-    const categories = await prisma.category.findMany({
+    const tags = await prisma.tag.findMany({
       orderBy: { name: 'asc' }
     });
 
-    return json({ success: true, data: categories, error: null });
+    return json({ success: true, data: tags, error: null });
   } catch (error) {
-    console.error('Error fetching categories:', error);
+    console.error('Error fetching tags:', error);
     return json({ success: false, data: null, error: '获取失败' }, { status: 500 });
   }
 };
@@ -18,13 +18,13 @@ export const POST = async ({ request }: { request: Request }) => {
   const { name }: { name: string } = await request.json();
 
   try {
-    const newCategory = await prisma.category.create({
+    const newTag = await prisma.tag.create({
       data: { name }
     });
 
-    return json({ success: true, data: newCategory, error: null }, { status: 201 });
+    return json({ success: true, data: newTag, error: null }, { status: 201 });
   } catch (error) {
-    console.error('Error creating category:', error);
+    console.error('Error creating tag:', error);
     return json({ success: false, data: null, error: '创建失败' }, { status: 500 });
   }
 };

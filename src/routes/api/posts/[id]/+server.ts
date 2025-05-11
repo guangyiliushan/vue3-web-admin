@@ -16,7 +16,7 @@ export const PUT = async ({ params, request }: { params: { id: string }; request
       )
     );
 
-    await prisma.post.update({
+    const updatedPost = await prisma.post.update({
       where: { id },
       data: {
         title,
@@ -26,12 +26,16 @@ export const PUT = async ({ params, request }: { params: { id: string }; request
           set: [],
           connect: tagRecords.map(tag => ({ id: tag.id }))
         }
+      },
+      include: {
+        category: true,
+        tags: true
       }
     });
 
-    return json({ message: '文章已更新' }, { status: 200 });
+    return json({ success: true, data: updatedPost, error: null }, { status: 200 });
   } catch (error) {
     console.error('Error updating post:', error);
-    return json({ error: '更新失败' }, { status: 500 });
+    return json({ success: false, data: null, error: '更新失败' }, { status: 500 });
   }
 };

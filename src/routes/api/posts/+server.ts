@@ -2,44 +2,62 @@ import { json } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
 
 export const POST = async ({ request }: { request: Request }) => {
-  const { title, content, category, tags }: { title: string; content: string; category: string | null; tags: string[] } = await request.json();
+  const { title, content, category, tags }: { title: string; content: string; category: string | null; tags: string } = await request.json();
 
   try {
-    const categoryRecord = category
-      ? await prisma.category.upsert({
-          where: { name: category },
-          update: {},
-          create: { name: category }
-        })
-      : null;
-
     const tagRecords = await Promise.all(
-      tags.map((tag: string) =>
+      tags.split(',').map((tagName: string) =>
         prisma.tag.upsert({
-          where: { name: tag },
+          where: { name: tagName.trim() },
           update: {},
-          create: { name: tag }
+          create: { name: tagName.trim() }
         })
       )
     );
 
-    const post = await prisma.post.create({
+    const newPost = await prisma.post.create({
       data: {
         title,
         content,
-        categoryId: categoryRecord?.id || null,
+        categoryId: category || null,
         tags: {
           connect: tagRecords.map(tag => ({ id: tag.id }))
-        },
-        timeToRead: Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 200)),
-        viewCount: 0
+        }
+      },
+      include: {
+        category: true,
+        tags: true
       }
     });
 
-    return json(post, { status: 201 });
+    return json({ success: true, data: newPost, error: null }, { status: 201 });
   } catch (error) {
     console.error('Error creating post:', error);
-    return json({ error: '创建文章失败' }, { status: 500 });
+    return json({ success: false, data: null, error: '创建失败' }, { status: 500 });
+  }
+};
+
+export const GET = async ({ url }: { url: URL }) => {
+  const category = url.searchParams.get('category');
+  const tag = url.searchParams.get('tag');
+
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        ...(category && { category: { name: category } }),
+        ...(tag && { tags: { some: { name: tag } } })
+      },
+      include: {
+        category: true,
+        tags: true
+      },
+      orderBy: { updatedAt: 'desc' }
+    });
+
+    return json({ success: true, data: posts, error: null });
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    return json({ success: false, data: null, error: '获取失败' }, { status: 500 });
   }
 };
 
