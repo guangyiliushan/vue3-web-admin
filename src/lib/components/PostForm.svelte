@@ -1,27 +1,33 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
   import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
   import MarkdownPreview from '$lib/components/MarkdownPreview.svelte';
 
+  export let data: { categories?: string[], post?: { id: string, title: string, content: string, category: string, tags: string } };
+  export let onSubmit: (payload: {id: string | null; title: string; content: string; category: string; tags: string }) => Promise<void>;
+  export let onCreateCategory: (newCategoryName: string) => Promise<void>;
+
+  let id = data.post?.id || null;
   let content = '';
   let title = '';
   let category = '';
-  let tags: string = ''; // 显式声明类型
-  let activeTab = 'edit'; // 'edit', 'preview', or 'split'
-  let categories: string[] = []; // 存储现有分类
-  let isCreatingCategory = false; // 是否正在创建新分类
-  let newCategoryName = ''; // 新分类名称
+  let tags: string = '';
+  let activeTab = 'edit';
+  let categories: string[] = [];
+  let isCreatingCategory = false;
+  let newCategoryName = '';
 
-  // 从服务器加载现有分类
-  export let data: { categories?: string[], post?: { id: string, title: string, content: string, category: string, tags: string } };
   $: categories = data.categories || [];
 
-  // 如果传入了文章数据，则初始化表单字段
   if (data.post) {
     title = data.post.title;
     content = data.post.content;
     category = data.post.category;
     tags = data.post.tags;
+  }
+
+  async function handleSubmit(event: Event) {
+    event.preventDefault();
+    await onSubmit({id, title, content, category, tags });
   }
 
   async function confirmNewCategory() {
@@ -34,47 +40,11 @@
       return;
     }
 
-    // 更新到数据库
-    const response = await fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newCategoryName })
-    });
-
-    if (response.ok) {
-      categories = [...categories, newCategoryName];
-      category = newCategoryName;
-      isCreatingCategory = false;
-      newCategoryName = '';
-    } else {
-      alert('创建分类失败');
-    }
-  }
-
-  async function handleSubmit(event: Event) {
-    event.preventDefault();
-
-    const payload = {
-      title,
-      content,
-      category,
-      tags
-    };
-
-    const url = data.post ? `/api/posts/${data.post.id}` : '/api/posts';
-    const method = data.post ? 'PUT' : 'POST';
-
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (response.ok) {
-      alert(data.post ? '文章更新成功' : '文章创建成功');
-    } else {
-      alert(data.post ? '文章更新失败' : '文章创建失败');
-    }
+    await onCreateCategory(newCategoryName);
+    categories = [...categories, newCategoryName];
+    category = newCategoryName;
+    isCreatingCategory = false;
+    newCategoryName = '';
   }
 </script>
 
@@ -159,21 +129,21 @@
 
     <div class="bg-white rounded-lg shadow mb-6">
       <div class="border-b px-4 py-2 flex">
-        <div >
-        <button 
-          type="button"
-          class="px-4 py-2 mr-2 {activeTab === 'edit' ? 'border-b-2 border-blue-500' : ''}" 
-          on:click={() => activeTab = 'edit'}
-        >
-          编辑
-        </button>
-        <button 
-          type="button"
-          class="px-4 py-2 mr-2 {activeTab === 'preview' ? 'border-b-2 border-blue-500' : ''}"
-          on:click={() => activeTab = 'preview'}
-        >
-          预览
-        </button>
+        <div>
+          <button 
+            type="button"
+            class="px-4 py-2 mr-2 {activeTab === 'edit' ? 'border-b-2 border-blue-500' : ''}" 
+            on:click={() => activeTab = 'edit'}
+          >
+            编辑
+          </button>
+          <button 
+            type="button"
+            class="px-4 py-2 mr-2 {activeTab === 'preview' ? 'border-b-2 border-blue-500' : ''}"
+            on:click={() => activeTab = 'preview'}
+          >
+            预览
+          </button>
         </div>
         <button 
           type="button"
