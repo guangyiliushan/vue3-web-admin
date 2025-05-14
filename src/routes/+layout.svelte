@@ -1,6 +1,11 @@
 <script lang="ts">
   import '../app.css';
-  
+  import {updateCategories} from '$lib/stores/categories';
+  import { onMount } from 'svelte';
+
+  onMount(() => {
+    updateCategories();
+  });
   let { children } = $props();
 </script>
 

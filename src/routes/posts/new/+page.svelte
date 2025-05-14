@@ -1,9 +1,18 @@
 <script lang="ts">
   import PostForm from '$lib/components/PostForm.svelte';
 
-  export let data: { categories?: string[] };
+  export let data: {
+    post?: {
+      id: string;
+      title: string;
+      content: string;
+      categoryId: string | null;
+      tags: string;
+    };
+    categories: { id: string; name: string }[];
+  };
 
-  async function handlePostSubmit(payload: { id: string | null; title: string; content: string; category: string; tags: string }) {
+  async function handlePostSubmit(payload: { id: string | null; title: string; content: string; categoryId: string | null; tags: string }) {
     const response = await fetch('/api/posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -16,19 +25,6 @@
       window.location.href = '/posts'; // 跳转到文章列表页
     }
   }
-
-  // 处理分类创建
-  async function handleCreateCategory(newCategoryName: string) {
-    const response = await fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newCategoryName })
-    });
-
-    if (!response.ok) {
-      alert('创建分类失败');
-    }
-  }
 </script>
 
 <div class="container mx-auto p-4">
@@ -39,6 +35,5 @@
   <PostForm 
     data={{ categories: data.categories }} 
     onSubmit={handlePostSubmit} 
-    onCreateCategory={handleCreateCategory} 
   />
 </div>

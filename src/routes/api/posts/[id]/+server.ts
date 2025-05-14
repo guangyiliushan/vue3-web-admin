@@ -3,25 +3,14 @@ import { prisma } from '$lib/server/prisma';
 
 export const PUT = async ({ params, request }: { params: { id: string }; request: Request }) => {
   const { id } = params;
-  const { title, content, category, tags }: { title: string; content: string; category: string | null; tags: string } = await request.json();
-  let categoryId: string | null = null;
+  const { title, content, categoryId, tags }: {
+    title: string;
+    content: string;
+    categoryId: string | null;
+    tags: string
+  } = await request.json();
 
-  if (category) {
-    try {
-      const existingCategory = await prisma.category.findUnique({
-        where: { name: category }
-      });
-
-      if (!existingCategory) {
-        return json({ success: false, data: null, error: '分类不存在' }, { status: 400 });
-      }
-
-      categoryId = existingCategory.id;
-    } catch (error) {
-      console.error('Error finding category:', error);
-      return json({ success: false, data: null, error: '获取分类失败' }, { status: 500 });
-    }
-  }
+  console.log('Received data:', {id, title, content, categoryId, tags });
 
   try {
     const tagRecords = await Promise.all(
@@ -55,5 +44,20 @@ export const PUT = async ({ params, request }: { params: { id: string }; request
   } catch (error) {
     console.error('Error updating post:', error);
     return json({ success: false, data: null, error: '更新失败' }, { status: 500 });
+  }
+};
+
+export const DELETE = async ({ params }) => {
+  const { id } = params;
+  console.log('Received id:', id);
+
+  try {
+    await prisma.post.delete({
+      where: { id }
+    });
+    return json({ message: '文章已删除' }, { status: 200 });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    return json({ error: '删除文章失败' }, { status: 500 });
   }
 };

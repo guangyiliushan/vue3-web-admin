@@ -2,15 +2,21 @@ import { json } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
 
 export const GET = async () => {
-  try {
+try {
     const categories = await prisma.category.findMany({
-      orderBy: { name: 'asc' }
+      select: { id: true, name: true }
     });
 
-    return json({ success: true, data: categories, error: null });
+    return new Response(
+      JSON.stringify({ data: categories }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error('Error fetching categories:', error);
-    return json({ success: false, data: null, error: '获取失败' }, { status: 500 });
+    return new Response(
+      JSON.stringify({ error: 'Failed to fetch categories' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 };
 

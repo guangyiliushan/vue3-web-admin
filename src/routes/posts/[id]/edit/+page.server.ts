@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ params }: { params: { id: string } 
   });
 
   const categories = await prisma.category.findMany({
-    select: { name: true }
+    select: { id: true, name: true }
   });
 
   if (post) {
@@ -18,6 +18,7 @@ export const load: PageServerLoad = async ({ params }: { params: { id: string } 
       post: {
         ...post,
         category: post.category?.name || null,
+        categoryId: post.category?.id || null,
         tags: post.tags.map(tag => tag.name).join(', ')
       },
       categories: categories.map(c => c.name)
@@ -33,7 +34,7 @@ export const actions: Actions = {
     const data = await request.formData();
     const title = data.get('title') as string;
     const content = data.get('content') as string;
-    const categoryName = data.get('category') as string || null;
+    const categoryId = data.get('categoryId') as string || null;
     const tagsString = data.get('tags') as string;
 
     const wordCount = content.trim().split(/\s+/).length;
@@ -44,15 +45,6 @@ export const actions: Actions = {
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0)
       .slice(0, 5);
-
-    let category = null;
-    if (categoryName) {
-      category = await prisma.category.upsert({
-        where: { name: categoryName },
-        update: {},
-        create: { name: categoryName }
-      });
-    }
 
     const tagRecords = await Promise.all(
       tags.map(tagName =>
@@ -69,7 +61,7 @@ export const actions: Actions = {
       data: {
         title,
         content,
-        categoryId: category?.id || null,
+        categoryId: categoryId || null,
         tags: {
           set: [],
           connect: tagRecords.map(tag => ({ id: tag.id }))

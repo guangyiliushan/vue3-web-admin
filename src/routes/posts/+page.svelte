@@ -1,11 +1,11 @@
 <script lang="ts">
-  export let data: { posts: Array<{ id: string; title: string; categoryId?: string; timeToRead: number; viewCount: number; updatedAt: string }> };
+  export let data: { posts: Array<{ id: string; title: string; category: string; timeToRead: number; viewCount: number; updatedAt: string }> };
   const { posts } = data;
 
   async function deletePost(postId: string) {
     if (confirm('确定要删除这篇文章吗？')) {
       try {
-        const response = await fetch(`/posts/${postId}`, { method: 'DELETE' });
+        const response = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
         if (response.ok) {
           location.reload();
         } else {
@@ -41,7 +41,7 @@
         {#each posts as post}
           <tr class="border-b hover:bg-gray-50">
             <td class="p-4">{post.title}</td>
-            <td class="p-4">{post.categoryId || '-'}</td>
+            <td class="p-4">{post.category}</td>
             <td class="p-4">{post.timeToRead} 分钟</td>
             <td class="p-4">{post.viewCount}</td>
             <td class="p-4">{new Date(post.updatedAt).toLocaleString()}</td>
