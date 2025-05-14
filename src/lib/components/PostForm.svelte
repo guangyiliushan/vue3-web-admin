@@ -42,7 +42,12 @@
 
 	async function handleSubmit(event: Event) {
 		event.preventDefault();
-		await onSubmit({ id, title, content, categoryId, tags });
+		try{
+			await onSubmit({ id, title, content, categoryId, tags });
+		}catch(error){
+			console.error('Error submitting form:', error);
+			alert('提交失败');
+		}
 	}
 
 	function handleCategoryChange(category: { id: string; name: string }) {
@@ -67,8 +72,10 @@
 
 			<div>
 				<label for="category" class="block text-sm font-medium text-gray-700">分类</label>
-				<CategoryCreator onCategoryChange={handleCategoryChange} />
-			</div>
+				<CategoryCreator 
+					onCategoryChange={handleCategoryChange} 
+                    selectedCategoryId={categoryId} 
+                />
 
 			<div>
 				<label for="tags" class="block text-sm font-medium text-gray-700">标签 (用逗号分隔)</label>

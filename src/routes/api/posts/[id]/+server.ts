@@ -10,9 +10,9 @@ export const PUT = async ({ params, request }: { params: { id: string }; request
     tags: string
   } = await request.json();
 
-  console.log('Received data:', {id, title, content, categoryId, tags });
-
   try {
+    const wordCount = content.trim().split(/\s+/).length;
+    const timeToRead = Math.max(1, Math.ceil(wordCount / 200));
     const tagRecords = await Promise.all(
       tags.split(',').map((tagName: string) =>
         prisma.tag.upsert({
@@ -32,7 +32,8 @@ export const PUT = async ({ params, request }: { params: { id: string }; request
         tags: {
           set: [],
           connect: tagRecords.map(tag => ({ id: tag.id }))
-        }
+        },
+        timeToRead,
       },
       include: {
         category: true,
@@ -49,7 +50,6 @@ export const PUT = async ({ params, request }: { params: { id: string }; request
 
 export const DELETE = async ({ params }) => {
   const { id } = params;
-  console.log('Received id:', id);
 
   try {
     await prisma.post.delete({

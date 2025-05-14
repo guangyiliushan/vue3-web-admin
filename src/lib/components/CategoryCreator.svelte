@@ -3,11 +3,11 @@
   import { onMount } from 'svelte';
 
   export let onCategoryChange: (category: { id: string; name: string }) => void;
+  export let selectedCategoryId: string | null = null;
 
   let categories = $categoriesStore;
   let isCreatingCategory = false;
   let newCategoryName = '';
-  let selectedCategoryId: string | null = null;
 
   onMount(async () => {
      updateCategories(); 
