@@ -5,7 +5,8 @@
 			title: string;
 			category: string;
 			timeToRead: number;
-			viewCount: number;
+			views: number;
+			likes: number;
 			createdAt: string;
 			updatedAt: string;
 		}>;
@@ -56,7 +57,7 @@
 						<td class="p-4">{post.title}</td>
 						<td class="p-4">{post.category}</td>
 						<td class="p-4">{post.timeToRead} 分钟</td>
-						<td class="p-4">{post.viewCount}</td>
+						<td class="p-4">{post.views}</td>
 						<td class="p-4">{new Date(post.createdAt).toLocaleString()}</td>
 						<td class="p-4">{new Date(post.updatedAt).toLocaleString()}</td>
 						<td class="p-4">

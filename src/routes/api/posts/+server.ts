@@ -28,7 +28,8 @@ export const POST = async ({ request }: { request: Request }) => {
           connect: tagRecords.map(tag => ({ id: tag.id }))
         },
         timeToRead,
-        viewCount: 0 ,
+        views: 0 ,
+        likes: 0 ,
       },
       include: {
         category: true,
